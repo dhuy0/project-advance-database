@@ -2,7 +2,7 @@
 use master --chuyển csdl hiện hành về master
 go 
 if DB_ID('QLNhaKhoa') IS NOT NULL
-	--alter database QLNK set single_user with rollback immediate
+	--alter database QLNhaKhoa set single_user with rollback immediate
 	DROP DATABASE  QLNhaKhoa
 GO
 CREATE DATABASE QLNhaKhoa
