@@ -2,7 +2,7 @@
 use master --chuyển csdl hiện hành về master
 go 
 if DB_ID('QLNhaKhoa') IS NOT NULL
-	--alter database QLNhaKhoa set single_user with rollback immediate
+	alter database QLNhaKhoa set single_user with rollback immediate
 	DROP DATABASE  QLNhaKhoa
 GO
 CREATE DATABASE QLNhaKhoa
@@ -14,6 +14,8 @@ SET DATEFORMAT DMY
 CREATE TABLE NGUOIDUNG
 (
     MANGUOIDUNG CHAR(6),
+    TENDANGNHAP CHAR(30) NOT NULL CHECK (TENDANGNHAP <> ''),
+    MATKHAU CHAR(30) NOT NULL CHECK (MATKHAU <> ''),
     TENNGUOIDUNG NVARCHAR(50) NOT NULL CHECK (TENNGUOIDUNG <> ''),
     NGAYSINH DATE NOT NULL CHECK (NGAYSINH <= GETDATE()),
     DIACHI NVARCHAR(100) NOT NULL CHECK (DIACHI <> ''),
