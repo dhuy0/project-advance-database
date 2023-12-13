@@ -452,105 +452,35 @@ FOR INSERT
 AS
     BEGIN
         IF EXISTS (SELECT * FROM inserted I, THONGTINTHANHTOAN T WHERE I.MATHANHTOAN = T.MATHANHTOAN AND I.NGAYGIAODICH < I.NGAYTHANHTOAN) 
-            BEGIN
-            --TÍNH TỔNG TIỀN THANH TOÁN CỦA MỖI THANH TOÁN BẰNG CÁCH LẤY TỔNG PHÍ ĐIỀU TRỊ CỦA TẤT CẢ HOÁ ĐƠN ĐIỀU TRỊ CỦA THANH TOÁN NÀY
-                IF EXISTS (SELECT * FROM THONGTINTHANHTOAN T JOIN HOADONDIEUTRI HD ON HD.MAHOADON = T.MATHANHTOAN JOIN INSERTED I ON I.MATHANHTOAN = T.MATHANHTOAN)
-                    BEGIN
-                        --SELECT MAHOADON FROM HOADONDIEUTRI
-                       
-                                            -------------------------------------------- Đang làm
-                        UPDATE T1
-                        SET T1.TONGTIENTHANHTOAN = T1.TONGTIENTHANHTOAN + HD.TONGTIEN
-                        FROM THONGTINTHANHTOAN T1 JOIN (SELECT HD.MAHOADON AS MAHOADON, SUM(HD.PHIDIEUTRI) AS TONGTIEN
-                                                    FROM HOADONDIEUTRI HD JOIN inserted i ON i.MATHANHTOAN = HD.MAHOADON
-                                                    GROUP BY HD.MAHOADON) AS HD ON HD.MAHOADON = T1.MATHANHTOAN
-                        ---------------
-                        
-                            
-                    END
-                    
-                ELSE 
-                
-                --NẾU THANH TOÁN NÀY CHƯA CÓ KẾ HOẠCH ĐIỀU TRỊ NÀO THÌ TỔNG TIỀN CẦN THANH TOÁN LÀ 0
-                    BEGIN
-                        UPDATE THONGTINTHANHTOAN
-                        SET TONGTIENTHANHTOAN = 0
-                        FROM THONGTINTHANHTOAN T JOIN INSERTED I ON I.MATHANHTOAN = T.MATHANHTOAN 
+        BEGIN
+            UPDATE THONGTINTHANHTOAN
+            SET TONGTIENTHANHTOAN = 0
+            FROM THONGTINTHANHTOAN T JOIN INSERTED I ON I.MATHANHTOAN = T.MATHANHTOAN 
 
-                        -- UPDATE THONGTINTHANHTOAN
-                        -- SET TIENDATRA = 0
-                        -- FROM THONGTINTHANHTOAN T JOIN INSERTED I ON I.MATHANHTOAN = T.MATHANHTOAN 
-
-                    END
 
                 -- TỰ ĐỘNG TÍNH TIỀN THỐI DỰA TRÊN TIỀN CẦN THANH TOÁN VÀ TIỀN ĐÃ TRẢ NẾU TIỀN ĐÃ TRẢ LỚN HƠN TIỀN THANH TOÁN
                  
-                                UPDATE T2
-                                SET T2.TIENTHOI = T2.TIENDATRA - T2.TONGTIENTHANHTOAN
-                                FROM THONGTINTHANHTOAN T2 JOIN inserted I ON T2.MATHANHTOAN = I.MATHANHTOAN
-                                WHERE T2.TONGTIENTHANHTOAN < T2.TIENDATRA
+            UPDATE T2
+            SET T2.TIENTHOI = T2.TIENDATRA - T2.TONGTIENTHANHTOAN
+            FROM THONGTINTHANHTOAN T2 JOIN inserted I ON T2.MATHANHTOAN = I.MATHANHTOAN
+            WHERE T2.TONGTIENTHANHTOAN < T2.TIENDATRA
                         
-                                UPDATE T2
-                                SET T2.TIENTHOI = 0
-                                FROM THONGTINTHANHTOAN T2 JOIN inserted I ON T2.MATHANHTOAN = I.MATHANHTOAN
-                                WHERE T2.TONGTIENTHANHTOAN >= T2.TIENDATRA
+            UPDATE T2
+            SET T2.TIENTHOI = 0
+            FROM THONGTINTHANHTOAN T2 JOIN inserted I ON T2.MATHANHTOAN = I.MATHANHTOAN
+            WHERE T2.TONGTIENTHANHTOAN >= T2.TIENDATRA
                         
                      
                 --PHẦN NÀY ĐỂ KIỂM TRA MỖI LẦN THÊM MỘT THÔNG TIN THANH TOÁN, ĐẢM BẢO PHẦN TỔNG TIỀN ĐIỀU TRỊ TRONG BẢNG HỒ SƠ CHI TIẾT BỆNH NHÂN CŨNG ĐƯỢC UPDATE
-                IF EXISTS (SELECT * FROM THONGTINTHANHTOAN T JOIN CHITIETHOSOBENHNHAN CTHS ON CTHS.MABENHNHAN = T.MABENHNHAN JOIN INSERTED I ON I.MATHANHTOAN = T.MATHANHTOAN)
-                        BEGIN
-                            --TÍNH TỔNG TIỀN ĐIỀU TRỊ CHO HỒ SƠ CHI TIẾT BỆNH NHÂN BẰNG CÁCH TÍNH TỔNG TẤT CẢ TIỀN CẦN THANH TOÁN CỦA BỆNH NHÂN NÀY
-                            --SELECT * FROM THONGTINTHANHTOAN WHERE MABENHNHAN = '002111'
-                            --SELECT * FROM CHITIETHOSOBENHNHAN WHERE MABENHNHAN = '002111'
-                            -- DECLARE @MABENHNHAN CHAR(6)--(SELECT MABENHNHAN FROM INSERTED)
-                            -- -- TẠO CURSOR CHẠY QUA BẢNG
-                            -- DECLARE CURSOR_BENHNHAN CURSOR FOR
-                            --     SELECT MABENHNHAN
-                            --     FROM inserted
-
-                            -- OPEN CURSOR_BENHNHAN
-
-                            -- FETCH NEXT FROM CURSOR_BENHNHAN INTO @MABENHNHAN
-
-                            -- WHILE @@FETCH_STATUS = 0
-                            -- BEGIN
-                            --     DECLARE @TONGDIEUTRI BIGINT = (SELECT SUM(T1.TONGTIENTHANHTOAN)
-                            --                 FROM THONGTINTHANHTOAN T1 JOIN CHITIETHOSOBENHNHAN CTHS1 ON CTHS1.MABENHNHAN = T1.MABENHNHAN
-                            --                 WHERE T1.MABENHNHAN = @MABENHNHAN
-                            --                 GROUP BY T1.MABENHNHAN)
-                            --         UPDATE CTHSBN
-                            --         SET CTHSBN.TONGTIENDIEUTRI = @TONGDIEUTRI
-                            --         FROM CHITIETHOSOBENHNHAN CTHSBN
-                            --         WHERE CTHSBN.MABENHNHAN = @MABENHNHAN
-                            -----------------TEST
-                            UPDATE CTHSBN
-                            SET CTHSBN.TONGTIENDIEUTRI = T.TONGDIEUTRI
-                            FROM CHITIETHOSOBENHNHAN CTHSBN JOIN (SELECT CTHSBN2.MABENHNHAN, SUM(i2.TONGTIENTHANHTOAN) AS TONGDIEUTRI
-                                                                FROM inserted i2 JOIN CHITIETHOSOBENHNHAN CTHSBN2 ON CTHSBN2.MABENHNHAN = i2.MABENHNHAN
-                                                                GROUP BY CTHSBN2.MABENHNHAN) AS T ON CTHSBN.MABENHNHAN = T.MABENHNHAN
-                            -----------------
-                            -- --TÍNH TỔNG TIỀN ĐÃ TRẢ CỦA BỆNH NHÂN
-                            -- --DECLARE @MABENHNHAN1 CHAR(6) = '001733'--(SELECT MABENHNHAN FROM INSERTED)
-                            -- DECLARE @TONGTHANHTOAN BIGINT = (SELECT SUM(T2.TIENDATRA)
-                            --                 FROM THONGTINTHANHTOAN T2 JOIN CHITIETHOSOBENHNHAN CTHS2 ON CTHS2.MABENHNHAN = T2.MABENHNHAN 
-                            --                 WHERE T2.MABENHNHAN = @MABENHNHAN
-                            --                 GROUP BY T2.MABENHNHAN)
-                            --         UPDATE CTHSBN
-                            --         SET CTHSBN.DATHANHTOAN = @TONGTHANHTOAN
-                            --         FROM CHITIETHOSOBENHNHAN CTHSBN
-                            --         WHERE CTHSBN.MABENHNHAN = @MABENHNHAN
-                            --     FETCH NEXT FROM CURSOR_BENHNHAN INTO @MABENHNHAN
-                            -- END
-                            -- CLOSE CURSOR_BENHNHAN
-                            -- DEALLOCATE CURSOR_BENHNHAN
-                            UPDATE CTHSBN
-                            SET CTHSBN.DATHANHTOAN = TONGDATRA
-                            FROM CHITIETHOSOBENHNHAN CTHSBN JOIN (SELECT CTHSBN2.MABENHNHAN, SUM(i2.TIENDATRA) AS TONGDATRA
-                                                                FROM inserted i2 JOIN CHITIETHOSOBENHNHAN CTHSBN2 ON CTHSBN2.MABENHNHAN = i2.MABENHNHAN
-                                                                GROUP BY CTHSBN2.MABENHNHAN) AS T ON CTHSBN.MABENHNHAN = T.MABENHNHAN
-                            
-                        END
+            IF EXISTS (SELECT * FROM THONGTINTHANHTOAN T JOIN CHITIETHOSOBENHNHAN CTHS ON CTHS.MABENHNHAN = T.MABENHNHAN JOIN INSERTED I ON I.MATHANHTOAN = T.MATHANHTOAN)
+                BEGIN
+                    UPDATE CTHSBN
+                        SET CTHSBN.DATHANHTOAN = TONGDATRA
+                        FROM CHITIETHOSOBENHNHAN CTHSBN JOIN (SELECT I2.MABENHNHAN, SUM(i2.TIENDATRA) AS TONGDATRA
+                                                            FROM inserted i2 
+                                                            GROUP BY I2.MABENHNHAN) AS T ON CTHSBN.MABENHNHAN = T.MABENHNHAN
             END
+        END
         ELSE 
             BEGIN
                 RAISERROR('NGAY THANH TOAN PHAI LON HON NGAY GIAO DICH', 16, 1)--SỐ ĐIỆN THOẠI KHÔNG THỂ CÓ CHỮ CÁI
@@ -624,63 +554,14 @@ AS
     BEGIN
         IF EXISTS (SELECT * FROM inserted I, CHITIETHOSOBENHNHAN BN WHERE I.MABENHNHAN = BN.MABENHNHAN)
             BEGIN
-                IF EXISTS (SELECT * FROM THONGTINTHANHTOAN T JOIN CHITIETHOSOBENHNHAN CTHS ON CTHS.MABENHNHAN = T.MABENHNHAN JOIN INSERTED I ON I.MABENHNHAN = CTHS.MABENHNHAN)
-                    BEGIN
-                        -- --SELECT * FROM CHITIETHOSOBENHNHAN
-                        -- DECLARE @MABENHNHAN CHAR(6) --= (SELECT MABENHNHAN FROM INSERTED)
-                        -- -- TẠO CURSOR CHẠY QUA BẢNG
-                        -- DECLARE CURSOR_BENHNHAN CURSOR FOR
-                        --     SELECT MABENHNHAN
-                        --     FROM inserted
+                UPDATE CTHSBN
+                SET CTHSBN.TONGTIENDIEUTRI = 0
+                FROM CHITIETHOSOBENHNHAN CTHSBN JOIN INSERTED I ON I.MABENHNHAN = CTHSBN.MABENHNHAN 
 
-                        -- OPEN CURSOR_BENHNHAN
-
-                        -- FETCH NEXT FROM CURSOR_BENHNHAN INTO @MABENHNHAN
-
-                        -- WHILE @@FETCH_STATUS = 0
-                        -- BEGIN
-                            -- DECLARE @TONGDIEUTRI BIGINT = (SELECT SUM(T1.TONGTIENTHANHTOAN)
-                            --             FROM THONGTINTHANHTOAN T1 JOIN CHITIETHOSOBENHNHAN CTHS1 ON CTHS1.MABENHNHAN = T1.MABENHNHAN
-                            --             WHERE CTHS1.MABENHNHAN = @MABENHNHAN
-                            --             GROUP BY T1.MABENHNHAN)
-                            -- CO CAN THIET?
-                            UPDATE CTHSBN
-                            SET CTHSBN.TONGTIENDIEUTRI = T2.TONGDIEUTRI
-                            FROM CHITIETHOSOBENHNHAN CTHSBN JOIN (SELECT i.MABENHNHAN, SUM(T1.TONGTIENTHANHTOAN) AS TONGDIEUTRI
-                                                                FROM THONGTINTHANHTOAN T1 JOIN inserted i ON T1.MABENHNHAN = i.MABENHNHAN
-                                                                GROUP BY i.MABENHNHAN) AS T2 ON CTHSBN.MABENHNHAN = T2.MABENHNHAN 
-                            -- WHERE CTHSBN.MABENHNHAN = @MABENHNHAN
-                        
-                            -- DECLARE @TONGTHANHTOAN BIGINT = (SELECT SUM(T2.TIENDATRA)
-                            --             FROM THONGTINTHANHTOAN T2 JOIN CHITIETHOSOBENHNHAN CTHS2 ON CTHS2.MABENHNHAN = T2.MABENHNHAN
-                            --             WHERE T2.MABENHNHAN = @MABENHNHAN
-                            --             GROUP BY T2.MABENHNHAN)
-                            -- UPDATE CTHSBN
-                            -- SET CTHSBN.DATHANHTOAN = @TONGTHANHTOAN
-                            -- FROM CHITIETHOSOBENHNHAN CTHSBN
-                            -- WHERE CTHSBN.MABENHNHAN = @MABENHNHAN
-                            --CO CAN THIET?
-                            UPDATE CTHSBN
-                            SET CTHSBN.DATHANHTOAN = T2.TONGDATRA
-                            FROM CHITIETHOSOBENHNHAN CTHSBN JOIN (SELECT i.MABENHNHAN, SUM(T1.TIENDATRA) AS TONGDATRA
-                                                                FROM THONGTINTHANHTOAN T1 JOIN inserted i ON T1.MABENHNHAN = i.MABENHNHAN
-                                                                GROUP BY i.MABENHNHAN) AS T2 ON CTHSBN.MABENHNHAN = T2.MABENHNHAN 
-
-                        --     FETCH NEXT FROM CURSOR_BENHNHAN INTO @MABENHNHAN
-                        -- END
-                        -- CLOSE CURSOR_BENHNHAN
-                        -- DEALLOCATE CURSOR_BENHNHAN
-                    END
-                ELSE
-                    BEGIN
-                        UPDATE CTHSBN
-                        SET CTHSBN.TONGTIENDIEUTRI = 0
-                        FROM CHITIETHOSOBENHNHAN CTHSBN JOIN INSERTED I ON I.MABENHNHAN = CTHSBN.MABENHNHAN 
-
-                        UPDATE CTHSBN
-                        SET CTHSBN.DATHANHTOAN = 0
-                        FROM CHITIETHOSOBENHNHAN CTHSBN JOIN INSERTED I ON I.MABENHNHAN = CTHSBN.MABENHNHAN 
-                    END
+                UPDATE CTHSBN
+                SET CTHSBN.DATHANHTOAN = 0
+                FROM CHITIETHOSOBENHNHAN CTHSBN JOIN INSERTED I ON I.MABENHNHAN = CTHSBN.MABENHNHAN 
+  
             END
     END
 GO
@@ -702,94 +583,48 @@ AS
                         FROM THONGTINTHANHTOAN T JOIN (SELECT i.MAHOADON, SUM(i.PHIDIEUTRI) AS TONGTHANHTOAN
                                                     FROM inserted i
                                                     GROUP BY i.MAHOADON) AS HD ON HD.MAHOADON = T.MATHANHTOAN
-                        
 
-
-                    --SELECT * FROM THONGTINTHANHTOAN
-                        -- DECLARE @MATHANHTOAN CHAR(6)-- = '000329'--(SELECT MAHOADON FROM INSERTED)
-
-                        -- DECLARE CURSOR_HOADON CURSOR FOR
-                        --     SELECT MAHOADON
-                        --     FROM inserted
-                        
-                        -- OPEN CURSOR_HOADON
-
-                        -- FETCH NEXT FROM CURSOR_HOADON INTO @MATHANHTOAN
-
-                        -- WHILE @@FETCH_STATUS = 0
-                        -- BEGIN
-                        -- DECLARE @TONGTHANHTOAN BIGINT = (SELECT SUM(HD.PHIDIEUTRI)
-                        --             FROM THONGTINTHANHTOAN T JOIN HOADONDIEUTRI HD ON T.MATHANHTOAN = HD.MAHOADON 
-                        --             WHERE T.MATHANHTOAN = @MATHANHTOAN
-                        --             GROUP BY HD.MAHOADON)
-                        -- UPDATE THONGTINTHANHTOAN
-                        -- SET TONGTIENTHANHTOAN = @TONGTHANHTOAN
-                        -- FROM THONGTINTHANHTOAN
-                        -- WHERE MATHANHTOAN = @MATHANHTOAN
-
-                        -- FETCH NEXT FROM CURSOR_HOADON INTO @MATHANHTOAN
-                        -- END
-                        -- CLOSE CURSOR_HOADON
-                        -- DEALLOCATE CURSOR_HOADON
                     END
             END
         --UPDATE LẠI GIÁ TRỊ TỔNG TIỀN CẦN THANH TOÁN TRONG HỒ SƠ CHI TIẾT BỆNH NHÂN LUÔN
         IF EXISTS (SELECT * FROM THONGTINTHANHTOAN T JOIN CHITIETHOSOBENHNHAN CTHS ON CTHS.MABENHNHAN = T.MABENHNHAN JOIN INSERTED I ON T.MATHANHTOAN = I.MAHOADON)
             BEGIN
-                -- UPDATE CTHSBN
-                -- --O DAY
-                -- SET CTHSBN.TONGTIENDIEUTRI = TONGTHANHTOAN
-                -- FROM CHITIETHOSOBENHNHAN CTHSBN JOIN THONGTINTHANHTOAN T ON T.MABENHNHAN = CTHSBN.MABENHNHAN
-                --                             JOIN (SELECT i.MAHOADON, SUM(i.PHIDIEUTRI) AS TONGTHANHTOAN
-                --                             FROM inserted i
-                --                             GROUP BY i.MAHOADON) AS HD ON HD.MAHOADON = T.MATHANHTOAN
-
-                DECLARE @MABENHNHAN CHAR(6)-- = (SELECT BN.MABENHNHAN FROM BENHNHAN BN JOIN THONGTINTHANHTOAN TT ON BN.MABENHNHAN = TT.MABENHNHAN JOIN inserted I ON I.MAHOADON = TT.MATHANHTOAN)
-
-                -- DECLARE CURSOR_BENHNHAN CURSOR FOR
-                -- SELECT MABENHNHAN
-                -- FROM CHITIETHOSOBENHNHAN
-
-                -- OPEN CURSOR_BENHNHAN
-
-                -- FETCH NEXT FROM CURSOR_BENHNHAN INTO @MABENHNHAN
-
-                -- WHILE @@FETCH_STATUS = 0
-                -- BEGIN
-                --     DECLARE @TONGDIEUTRI BIGINT = (SELECT SUM(T1.TONGTIENTHANHTOAN)
-                --             FROM THONGTINTHANHTOAN T1 JOIN CHITIETHOSOBENHNHAN CTHS1 ON CTHS1.MABENHNHAN = T1.MABENHNHAN
-                --             WHERE T1.MABENHNHAN = @MABENHNHAN
-                --             GROUP BY T1.MABENHNHAN)
-                --     UPDATE CTHSBN
-                --     SET CTHSBN.TONGTIENDIEUTRI = @TONGDIEUTRI
-                --     FROM CHITIETHOSOBENHNHAN CTHSBN
-                --     WHERE CTHSBN.MABENHNHAN = @MABENHNHAN
-                    
-
-                --     FETCH NEXT FROM CURSOR_BENHNHAN INTO @MABENHNHAN
-                -- END
-                -- CLOSE CURSOR_BENHNHAN
-                -- DEALLOCATE CURSOR_BENHNHAN
+                UPDATE CTHSBN
+                SET CTHSBN.TONGTIENDIEUTRI = TONGTHANHTOAN
+                FROM CHITIETHOSOBENHNHAN CTHSBN 
+                                            JOIN (SELECT T.MABENHNHAN, SUM(T.TONGTIENTHANHTOAN) AS TONGTHANHTOAN
+                                            FROM THONGTINTHANHTOAN T
+                                            GROUP BY T.MABENHNHAN) AS THANHTOAN ON THANHTOAN.MABENHNHAN = CTHSBN.MABENHNHAN JOIN THONGTINTHANHTOAN T1 ON T1.MABENHNHAN = CTHSBN.MABENHNHAN JOIN inserted I ON I.MAHOADON = T1.MATHANHTOAN
             END
 
         -- TỰ ĐỘNG TÍNH TIỀN THỐI DỰA TRÊN TIỀN CẦN THANH TOÁN VÀ TIỀN ĐÃ TRẢ NẾU TIỀN ĐÃ TRẢ LỚN HƠN TIỀN THANH TOÁN
        
-                    UPDATE T2
-                    SET T2.TIENTHOI = T2.TIENDATRA - T2.TONGTIENTHANHTOAN
-                    FROM THONGTINTHANHTOAN T2 JOIN inserted I ON T2.MATHANHTOAN = I.MAHOADON
-                    WHERE T2.TONGTIENTHANHTOAN < T2.TIENDATRA
+        UPDATE T2
+        SET T2.TIENTHOI = T2.TIENDATRA - T2.TONGTIENTHANHTOAN
+        FROM THONGTINTHANHTOAN T2 JOIN inserted I ON T2.MATHANHTOAN = I.MAHOADON
+        WHERE T2.TONGTIENTHANHTOAN < T2.TIENDATRA
                     
         
-                    UPDATE T2
-                    SET T2.TIENTHOI = 0
-                    FROM THONGTINTHANHTOAN T2 JOIN inserted I ON T2.MATHANHTOAN = I.MAHOADON
-                    WHERE T2.TONGTIENTHANHTOAN >= T2.TIENDATRA
+        UPDATE T2
+        SET T2.TIENTHOI = 0
+        FROM THONGTINTHANHTOAN T2 JOIN inserted I ON T2.MATHANHTOAN = I.MAHOADON
+        WHERE T2.TONGTIENTHANHTOAN >= T2.TIENDATRA
         
     END
 GO
 
--- select * from CHITIETHOSOBENHNHAN
+-- select * from CHITIETHOSOBENHNHAN WHERE MABENHNHAN = '016005'
+-- select SUM(TONGTIENTHANHTOAN) from THONGTINTHANHTOAN WHERE MABENHNHAN = '016005'
+-- select MATHANHTOAN from THONGTINTHANHTOAN WHERE MABENHNHAN = '016005'
+-- select * from HOADONDIEUTRI where MAHOADON = '279112'
 
+-- SELECT * FROM CHITIETHOSOBENHNHAN WHERE MABENHNHAN = '002815'
+-- SELECT * FROM THONGTINTHANHTOAN WHERE MABENHNHAN = '002815'
+-- SELECT SUM(TONGTIENTHANHTOAN) FROM THONGTINTHANHTOAN WHERE MABENHNHAN = '002815'
+-- SELECT SUM(TIENDATRA) FROM THONGTINTHANHTOAN WHERE MABENHNHAN = '002815'
+
+-- INSERT INTO HOADONDIEUTRI(MAHOADON, MADIEUTRI, MOTA, NGAYDIEUTRI, PHIDIEUTRI)
+-- VALUES ('279112', '001', 'abcd', '21/12/2022', 1000000)
 -- CREATE TRIGGER TRIGGER_TEST
 -- ON BENHNHAN
 -- FOR INSERT
@@ -857,8 +692,7 @@ GO
 -- VALUES ('000001', '000143', 'DEO CO MO TA', '21/12/2022', 1000)
 -- INSERT INTO HOADONDIEUTRI(MAHOADON, MADIEUTRI, MOTA, NGAYDIEUTRI, PHIDIEUTRI)
 -- VALUES ('000001', '000206', 'DEO CO MO TA', '21/12/2022', 2000)
--- INSERT INTO HOADONDIEUTRI(MAHOADON, MADIEUTRI, MOTA, NGAYDIEUTRI, PHIDIEUTRI)
--- VALUES ('000002', '000206', 'DEO CO MO TA', '21/12/2022', 2000)
+
 --SELECT TOP 1 * FROM DIEUTRI
 
 --  
@@ -869,7 +703,7 @@ GO
 
 
 -- INSERT DIEUTRI(MADIEUTRI, TENDIEUTRI)
--- VALUES ('003', 'E')
+-- VALUES ('001', 'E')
 
 -- SELECT TOP 1 * FROM NHASI
 
@@ -878,9 +712,9 @@ GO
 -- INSERT DIEUTRI(MADIEUTRI, TENDIEUTRI)
 -- VALUES ('002', 'E')
 -- INSERT INTO HOADONDIEUTRI(MAHOADON, MADIEUTRI, MOTA, NGAYDIEUTRI, PHIDIEUTRI)
--- VALUES ('606762', '005', 'DEO CO MO TA', '21/12/2022', 4000)
+-- VALUES ('606762', '005', 'afhbd', '21/12/2022', 4000)
 -- INSERT INTO HOADONDIEUTRI(MAHOADON, MADIEUTRI, MOTA, NGAYDIEUTRI, PHIDIEUTRI)
--- VALUES ('606762', '002', 'DEO CO MO TA', '21/12/2022', 10)
+-- VALUES ('606762', '002', 'sdfsr', '21/12/2022', 10)
 
 
 -- UPDATE T
