@@ -1,8 +1,22 @@
 
-DROP PROC IF EXISTS DangNhap
-DROP PROC IF EXISTS DanhSachBenhNhan
-DROP PROC IF EXISTS ThemBenhNhan
-DROP PROC IF EXISTS CapNhatBenhNhan
+DROP PROC IF EXISTS Proc_DangNhap
+DROP PROC IF EXISTS Proc_DanhSachBenhNhan
+DROP PROC IF EXISTS Proc_ThemBenhNhan
+DROP PROC IF EXISTS Proc_CapNhatBenhNhan
+DROP PROC IF EXISTS Proc_ThemThongTinChiDinh
+DROP PROC IF EXISTS Proc_XoaThongTinChiDinh 
+DROP PROC IF EXISTS Proc_CapNhatThongTinChiDinh 
+DROP PROC IF EXISTS Proc_CapNhatThongTinSkrm
+DROP PROC IF EXISTS Proc_XemKeHoachDieuTri
+DROP PROC IF EXISTS Proc_XemCuocHenTheoNhaSi
+DROP PROC IF EXISTS Proc_XemCuocHenTheoPhongKham
+DROP PROC IF EXISTS Proc_XemCuocHenTheoNgay
+DROP PROC IF EXISTS	Proc_CapNhatTtThanhToan
+DROP PROC IF EXISTS Proc_XemThongTinThanhToan
+DROP PROC IF EXISTS Proc_ThemKeHoachDieuTri
+DROP PROC IF EXISTS Proc_SuaKeHoachDieuTri
+DROP PROC IF EXISTS Proc_XoaKeHoachDieuTri
+DROP PROC IF EXISTS Proc_CapNhatThongTInChongChiDinh
 GO
 
 --Dang nhap
@@ -47,12 +61,12 @@ GO
 
 -- Them Benh Nhan 
 CREATE PROC Proc_ThemBenhNhan 
-@HoTen NCHAR(50),
-@SoDienThoai CHAR(12),
-@DiaChi NCHAR(100),
-@Email CHAR(30),
-@NgaySinh DATE,
-@NhaSi CHAR(10)  = NULL
+@HoTen NCHAR(50) = NULL,
+@SoDienThoai CHAR(12) = NULL,
+@DiaChi NCHAR(100) = NULL,
+@Email CHAR(30) = NULL,
+@NgaySinh DATE =NULL,
+@NhaSi INT  = NULL
 AS 
 BEGIN
 	DECLARE @autoID INT = 
@@ -87,16 +101,15 @@ GO
 
 
 CREATE PROC Proc_CapNhatBenhNhan 
-@MaBenhNhan CHAR(6),
+@MaBenhNhan INT,
 @TenBenhNhan CHAR(50),
 @sdt CHAR(10),
 @DiaChi CHAR(100),
 @Email CHAR(30),
 @NgaySinh DATE,
-@NhaSi CHAR(6)
+@NhaSi INT
 AS
 BEGIN
-	SET NOCOUNT ON;
 	UPDATE dbo.BENHNHAN
 	SET
 	HOTEN = ISNULL(@TenBenhNhan, HOTEN),
@@ -108,11 +121,11 @@ BEGIN
 	WHERE MABENHNHAN = @MaBenhNhan;
 	PRINT('Update success');
 END
-
+GO
 ------------------------Ho so chi tiet---------------------------------
-
 --Them thong tin chong chi dinh 
-CREATE PROC Proc_ThenThongTinChiDinh 
+
+CREATE PROC Proc_ThemThongTinChiDinh 
 @MaBenhNhan INT,
 @MaThuoc INT
 AS 
@@ -125,9 +138,9 @@ BEGIN
 	VALUES
 	(   @MaBenhNhan, -- MABENHNHAN - char(6)
 	    @MaThuoc  -- MATHUOC - char(6)
-	)
-
+	);
 END
+GO
 
 --Xoa thong tin chong chi dinh 
 CREATE PROC Proc_XoaThongTinChiDinh 
@@ -140,6 +153,7 @@ BEGIN
 	WHERE	MABENHNHAN = @MaBenhNhan AND MATHUOC = @MaThuoc;
 	
 END
+GO
 
 CREATE PROC Proc_CapNhatThongTinChongChiDinh
 @MaBenhNhan INT, 
@@ -151,6 +165,7 @@ BEGIN
 	SET MATHUOC = @MaTHuocMoi 
 	WHERE MABENHNHAN = @MaBenhNhan AND MATHUOC = @MaThuocCu
 END
+GO
 
 CREATE PROC Proc_CapNhatThongTinSKRM 
 @MaBenhNhan INT,
@@ -161,6 +176,7 @@ BEGIN
 	SET SUCKHOERANGMIENG = @TinhTrangSkrm
 	WHERE MABENHNHAN = @MaBenhNhan
 END
+GO
 
 CREATE PROC Proc_XemKeHoachDieuTri 
 @MaBenhNhan INT
@@ -274,7 +290,7 @@ BEGIN
 END
 GO
 
-CREATE PROC Proc_XemCuocHenTheophongKham
+CREATE PROC Proc_XemCuocHenTheoPhongKham
 @PhongKham INT
 AS 
 BEGIN 
@@ -283,8 +299,10 @@ SELECT l.MALICHHEN , l.THOIGIAN, l.NHASI, l.MABENHNHAN, b.HOTEN,
 	FROM dbo.LICHHEN l , dbo.BENHNHAN b
 	WHERE l.MABENHNHAN = b.MABENHNHAN and l.PHONG = @PhongKham
 END
+GO
 
-CREATE PROC Pro_XemCuocHenTheoTheoNhaSi
+
+CREATE PROC Proc_XemCuocHenTheoNhaSi
 @MaNhaSi INT
 AS 
 BEGIN
@@ -293,3 +311,4 @@ SELECT l.MALICHHEN , l.THOIGIAN, l.NHASI, l.MABENHNHAN, b.HOTEN,
 	FROM dbo.LICHHEN l , dbo.BENHNHAN b
 	WHERE l.MABENHNHAN = b.MABENHNHAN and l.NHASI = @MaNhaSi
 END
+GO
