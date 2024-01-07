@@ -312,3 +312,179 @@ SELECT l.MALICHHEN , l.THOIGIAN, l.NHASI, l.MABENHNHAN, b.HOTEN,
 	WHERE l.MABENHNHAN = b.MABENHNHAN and l.NHASI = @MaNhaSi
 END
 GO
+
+	
+-- 22. Xem danh sach nha si
+go
+create procedure Proc_XemDanhSachNhaSi
+as
+begin
+	select NguoiDung.TENNGUOIDUNG as "Tên nha sĩ", NguoiDung.NGAYSINH as "Ngày sinh", NguoiDung.DIACHI as "Địa chỉ", 
+			NguoiDung.SODIENTHOAI as "Số điện thoại", NhaSi.CHUYENMON as "Chuyên môn", NhaSi.KINHNGHIEM as "Kinh nghiệm"
+	from NhaSi join NguoiDung on NhaSi.MABACSI = NguoiDung.MANGUOIDUNG
+end
+go
+
+exec Proc_XemDanhSachNhaSi
+
+-- 23. Them nha si
+go
+create procedure Proc_ThemNhaSi
+@mabacsi int,
+@chuyenmon nvarchar(50),
+@kinhnghiem nvarchar(50)
+as
+begin
+	insert into NhaSi(MABACSI, CHUYENMON, KINHNGHIEM) values (@mabacsi,@chuyenmon, @kinhnghiem)
+end
+
+-- 24. Cap nhat nha si
+go
+create procedure Proc_CapNhapNhaSi
+@mabacsi char(6),
+@chuyenmon nvarchar(50),
+@kinhnghiem nvarchar(50)
+as
+begin
+	update NHASI
+	set 
+		CHUYENMON = isnull(@chuyenmon,CHUYENMON), 
+		KINHNGHIEM = isnull(@kinhnghiem, KINHNGHIEM)
+	where MABACSI = @mabacsi
+end
+
+exec Proc_CapNhapNhaSi '000105', 'OKKCIA7', '3 năm'
+
+-- 25. Xem danh sach nhan vien
+go
+create procedure Proc_XemDanhSachNhanVien
+as
+begin
+	select NguoiDung.TENNGUOIDUNG as "Tên nhân viên", NguoiDung.NGAYSINH as "Ngày sinh", NguoiDung.DIACHI as "Địa chỉ", 
+			NguoiDung.SODIENTHOAI as "Số điện thoại", NhanVien.PHONGBAN
+	from NhanVien join NguoiDung on NhanVien.MaNhanVien = NguoiDung.MaNguoiDung
+end
+
+exec Proc_XemDanhSachNhanVien
+
+-- 26. Them nhan vien
+go 
+create procedure Proc_ThemNhanVien
+@manhanvien int,
+@phongban nvarchar(50)
+as
+begin
+	insert into NhanVien(MANHANVIEN, PHONGBAN) values (@manhanvien, @phongban)
+end
+
+-- 27. Cap nhat nhan vien
+go 
+create procedure Proc_CapNhatNhanVien
+@manhanvien int,
+@phongban nvarchar(50)
+as
+begin
+	update NhanVien
+	set 
+		PhongBan = isnull(@phongban, PhongBan)
+	where MaNhanVien = @manhanvien
+end
+
+exec Proc_CapNhatNhanVien '000105', null
+
+-- 28. Ma, ten va lich lam viec cua nha si
+
+-- 29. Them lich lam viec cho nha si
+
+-- 30. Xem danh sach thuoc theo dang phan trang
+go
+create procedure Proc_XemDanhSachThuoc
+@pageSize int , @pageNumber INT
+AS 
+BEGIN
+	SET NOCOUNT ON;
+
+	DECLARE @Offset INT;
+	SET @Offset = @pageSize * (@pageNumber -1)
+
+
+	SELECT MATHUOC, TENTHUOC, GHICHU
+	FROM Thuoc
+	ORDER BY MATHUOC
+	DESC
+	OFFSET	@Offset ROWS
+	FETCH NEXT @PageSize ROWS ONLY;
+END
+
+-- 31. Cap nhat thuoc
+go
+create procedure Proc_CapNhatThuoc
+@mathuoc int,
+@tenthuoc nvarchar(50),
+@ghichu nvarchar(50)
+as
+begin
+	update Thuoc
+	set 
+		TenThuoc = isnull(@tenthuoc, TenThuoc),
+		GhiChu = isnull(@ghichu, GhiChu)
+	where MaThuoc = @mathuoc
+end
+
+-- 32. Xoa thuoc
+go
+create procedure Proc_XoaThuoc
+@mathuoc int
+as
+begin
+	delete Thuoc
+	where MaThuoc = @mathuoc
+end
+
+-- 33. Them thuoc
+go 
+create procedure Proc_ThemThuoc
+@mathuoc int,
+@tenthuoc nvarchar(50),
+@ghichu nvarchar(50)
+as 
+begin
+	insert into Thuoc(MATHUOC,TENTHUOC, GHICHU) values(@mathuoc, @tenthuoc, @ghichu)
+end
+
+-- 34. Lay ra cac dieu tri trong ngay do voi group by ma bac si
+go
+create procedure Proc_DieuTriTrongNgay
+@ngay date
+as
+begin
+	select ND.MANGUOIDUNG as "Mã nha sĩ", 
+			ND.TENNGUOIDUNG as "Nha sĩ", 
+			DT.TENDIEUTRI as "Tên điều trị", 
+			BN.HOTEN as "Bệnh nhân", 
+			HDDT.NGAYDIEUTRI as "Ngày điều trị"
+	from THONGTINTHANHTOAN TTTT, HoaDonDieuTri HDDT, NguoiDung ND, BenhNhan BN, DieuTri DT
+	where ND.MANGUOIDUNG = TTTT.NHASI and TTTT.MATHANHTOAN = HDDT.MAHOADON and HDDT.NGAYDIEUTRI = @ngay
+			and TTTT.MABENHNHAN = BN.MABENHNHAN and HDDT.MADIEUTRI = DT.MADIEUTRI
+	group by ND.MANGUOIDUNG
+end
+
+-- 35. Lay ra cac cuoc hen trong khoang thoi gian, group by ma bac si
+go 
+create procedure Proc_CuocHenTrongKhoangThoiGian
+@ngay date,
+@thoigian time,
+@gioketthuc time
+as
+begin
+	select ND.TENNGUOIDUNG as "Nha sĩ", 
+			LH.NGAYHENYEUCAU as "Ngày", 
+			LH.THOIGIAN as "Thời gian", 
+			LH.GIOKETTHUC as "Giờ kết thúc",
+			LH.PHONG as "Phòng", 
+			BN.HOTEN as "Bệnh nhân"
+	from NguoiDung ND, LichHen LH, BenhNhan BN
+	where ND.MANGUOIDUNG = LH.NHASI and LH.MABENHNHAN = BN.MABENHNHAN and 
+			LH.NGAYHENYEUCAU = @ngay and LH.THOIGIAN = @thoigian and LH.GIOKETTHUC = @gioketthuc
+	group by ND.MANGUOIDUNG
+end
