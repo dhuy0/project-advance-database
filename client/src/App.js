@@ -1,4 +1,5 @@
 import React from "react";
+import { NavLink, Route, Routes} from 'react-router-dom'
 import "./index.css";
 
 
@@ -17,6 +18,8 @@ import Features from "./components/Features";
 
 export default function App() {
   return (
+
+    
     <div>
       <Navbar />
       <Hero />
