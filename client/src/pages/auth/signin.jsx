@@ -4,19 +4,21 @@ import {VALIDATOR_EMAIL, VALIDATOR_REQUIRE, VALIDATOR_MINLENGTH, VALIDATOR_COMPA
 import {useForm} from '../../shared/hooks/form-hook'
 import { Link, useNavigate } from "react-router-dom";
 import Button from '../../components/shared/FormElements/button'
-
+import {useHttpClient} from "../../shared/hooks/http-hook"
 
 // css
 import "./signin.css"
 
 import { AuthContext } from "../../shared/context/auth-context";
-
+import LoadingSpinner from '../../components/shared/UIElements/LoadingSpinner';
+import ErrorModal from '../../components/shared/UIElements/ErrorModal'
 
 
 export default function SignIn (props) {
     const auth = useContext(AuthContext);
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const [isLoginMode , setIsLoginMode] = useState(true);
+    
     const [formState, inputHandler, setFormData] = useForm( 
     {
         email : {
@@ -31,6 +33,7 @@ export default function SignIn (props) {
     }, false
     )
 
+    const {isLoading, error , sendRequest, clearError} = useHttpClient();
 
     const switchModeHandler = ( ) => {
         if(!isLoginMode) {
@@ -62,20 +65,54 @@ export default function SignIn (props) {
         setIsLoginMode(prev => !prev);
     };
 
-    const authSubmitHandler = (event)=> {
+    const authSubmitHandler = async event => {
         event.preventDefault();
-        console.log(formState.inputs)
-        auth.login('001');
-        navigate('/dashboard')
-        
-    }
+        let data;
+        try{
+        if (isLoginMode) {
+          data = await sendRequest('http://localhost:5000/api/users/signin', 
+            'POST',
+            {
+                'Content-Type': 'application/json'
+            },
+            JSON.stringify({
+              // username: formState.inputs.name.value,
+              email: formState.inputs.email.value,
+              password: formState.inputs.password.value
+            })
+          );
+        } 
+        else {
+          try {
+          const formData = new FormData();
+          formData.append('email', formState.inputs.email.value);
+          formData.append('username', formState.inputs.name.value);
+          formData.append('password', formState.inputs.password.value); 
+          formData.append('image', formState.inputs.image.value);
+          data = await sendRequest(
+            'http://localhost:5000/api/users/signup',
+            'POST',
+            {},
+            formData,
+          );}
+          catch (err) {}
+        }
+        console.log(data)
+        auth.login(data.user.userId, data.user.token);
+        navigate("/dashboard")
+        }
+        catch (err){}
+
+      };
 
     return (
         <>
-        {/* { auth.isLoggedIn && (<Navigate to ='/home' replace = {true}/> )} */}
-        <div className="container-fluid d-flex flex-column" id = "form-container">
         
-        <form className='signin-form'>
+        <ErrorModal error = {error} onClear = {clearError}/>
+        
+        <div className="container-fluid d-flex flex-column" id = "form-container">
+        { isLoading && <LoadingSpinner asOverlay/>  }
+        <form className='signin-form' onSubmit={authSubmitHandler}>
             <div className="form-heading">
             <h3 >Đăng nhập</h3>
             <p>Vào hệ thống của Nha Khoa </p>
@@ -144,17 +181,16 @@ export default function SignIn (props) {
         </>
         }
          <div className="suggest-signup d-flex justify-content-center gap-3">
-            <Button
+            {/* <Button
             className = "btn"
             type = "button"
             onClick={switchModeHandler}
             inverse
             >Chuyển sang {isLoginMode? "đăng ký" : "đăng nhập"}
-            </Button>  
+            </Button>   */}
         </div>
         <div className="submit d-flex justify-content-center">
         <Button type = "submit" disabled = {!formState.isValid} className='btn btn-submit' primary
-        onClick = {authSubmitHandler}
         >
         {isLoginMode ? 'Đăng nhập' : 'Đăng ký'}
 

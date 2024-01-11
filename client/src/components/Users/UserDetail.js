@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom';
 
 const UserDetails = () => {
   const { patientId } = useParams();
-  console.log(patientId)
   const [userDetails, setUserDetails] = useState(null);
 
   useEffect(() => {
