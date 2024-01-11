@@ -24,7 +24,7 @@ BEGIN
 			DATEADD(DAY, -FLOOR(RAND() * 36525), GETDATE()) AS NGAYSINH,
 			N'Địa chỉ ' + CAST(k AS VARCHAR) AS DIACHI,
 			'432' + RIGHT('0000' + CAST(k AS VARCHAR), 4) AS SODIENTHOAI,
-			N'NHA SĨ' AS ROLES
+			CASE WHEN k % 3 = 0 THEN N'NHA SĨ' WHEN k % 3 = 1 THEN N'QUẢN TRỊ VIÊN' ELSE N'NHÂN VIÊN' END AS ROLES
 		FROM Nums
 		WHERE k <= 100000;
 	
@@ -88,31 +88,80 @@ BEGIN
 END
 GO
 
-
-create PROCEDURE InsertSampleData_ChiTietBenhNhan
+create PROCEDURE InsertSampleData_NhanVien
 AS
 BEGIN
     WITH
-		L0   AS (SELECT c FROM (SELECT 1 UNION ALL SELECT 1) AS D(c)), -- 2^1
-		L1   AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),       -- 2^2
-		L2   AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),       -- 2^4
-		L3   AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),       -- 2^8
-		L4   AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),       -- 2^16
-		L5   AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),       -- 2^32
-		Nums AS (SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS k FROM L5)
+        L0   AS (SELECT c FROM (SELECT 1 UNION ALL SELECT 1) AS D(c)), -- 2^1
+        L1   AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),       -- 2^2
+        L2   AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),       -- 2^4
+        L3   AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),       -- 2^8
+        L4   AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),       -- 2^16
+        L5   AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),       -- 2^32
+        Nums AS (SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS k FROM L5)
 
-		-- Thêm dữ liệu cho bảng CHITIETHOSOBENHNHAN với MABENHNHAN từ 1 đến 1000000
-		INSERT INTO CHITIETHOSOBENHNHAN (MABENHNHAN, TUOI, GIOITINH, TONGTIENDIEUTRI, DATHANHTOAN, SUCKHOERANGMIENG, TINHTRANGDIUNG)
-		SELECT 
-			k AS MABENHNHAN,
-			null,
-			CASE WHEN k % 2 = 0 THEN N'NAM' ELSE N'NỮ' END AS GIOITINH,
-			null, -- Giả sử mỗi bệnh nhân có chi phí điều trị là k * 100000
-			null, -- Giả sử một nửa bệnh nhân đã thanh toán
-			N'Sức khỏe răng miệng ' + CAST(k AS VARCHAR) AS SUCKHOERANGMIENG,
-			N'Tình trạng điều ng ' + CAST(k AS VARCHAR) AS TINHTRANGDIUNG
-		FROM Nums
-		WHERE k <= 100000;
+        -- Thêm dữ liệu cho bảng NHANVIEN với MANHANVIEN và PHONGBAN từ 1 đến 1000000
+        INSERT INTO NHANVIEN (MANHANVIEN, PHONGBAN)
+        SELECT 
+            k AS MANHANVIEN,
+            N'Phòng ' + CAST(k AS VARCHAR) AS PHONGBAN
+        FROM Nums
+        WHERE k <= 100000;
+	
+    PRINT 'Sample data inserted successfully.'
+END
+GO
+
+create PROCEDURE InsertSampleData_QuanTriVien
+AS
+BEGIN
+   WITH
+        L0   AS (SELECT c FROM (SELECT 1 UNION ALL SELECT 1) AS D(c)), -- 2^1
+        L1   AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),       -- 2^2
+        L2   AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),       -- 2^4
+        L3   AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),       -- 2^8
+        L4   AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),       -- 2^16
+        L5   AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),       -- 2^32
+        Nums AS (SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS k FROM L5)
+
+        -- Thêm dữ liệu cho bảng QUANTRIVIEN với MAQTV và CHUCVU từ 1 đến 1000000
+        INSERT INTO QUANTRIVIEN (MAQTV, CHUCVU)
+        SELECT 
+            k AS MAQTV,
+            N'Chức vụ ' + CAST(k AS VARCHAR) AS CHUCVU
+        FROM Nums
+        WHERE k <= 100000;
+	
+    PRINT 'Sample data inserted successfully.'
+END
+GO
+
+
+CREATE PROCEDURE InsertSampleData_ChiTietBenhNhan
+AS
+BEGIN
+   WITH
+        L0   AS (SELECT c FROM (SELECT 1 UNION ALL SELECT 1) AS D(c)), -- 2^1
+        L1   AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),       -- 2^2
+        L2   AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),       -- 2^4
+        L3   AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),       -- 2^8
+        L4   AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),       -- 2^16
+        L5   AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),       -- 2^32
+        Nums AS (SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS k FROM L5)
+
+        -- Thêm dữ liệu cho bảng CHITIETHOSOBENHNHAN với MABENHNHAN, TUOI, GIOITINH, TONGTIENDIEUTRI, DATHANHTOAN, SUCKHOERANGMIENG và TINHTRANGDIUNG
+        INSERT INTO CHITIETHOSOBENHNHAN (MABENHNHAN, TUOI, GIOITINH, TONGTIENDIEUTRI, DATHANHTOAN, SUCKHOERANGMIENG, TINHTRANGDIUNG)
+        SELECT 
+            k AS MABENHNHAN,
+            k % 3 + 20 AS TUOI,
+            CASE WHEN k % 2 = 0 THEN N'NAM' ELSE N'NỮ' END AS GIOITINH,
+            k * 10  AS TONGTIENDIEUTRI,
+            k * 20  AS DATHANHTOAN,
+            N'Sức khỏe răng miệng ' + (CAST(k AS VARCHAR)) AS SUCKHOERANGMIENG,
+            N'Tình trạng điều ng ' + (CAST(k AS VARCHAR)) AS TINHTRANGDIUNG
+        FROM Nums
+        WHERE k <= 100000;
+
 
     END
 
@@ -123,25 +172,22 @@ create PROCEDURE InsertSampleData_Thuoc
 AS
 BEGIN
     WITH
-		L0   AS (SELECT c FROM (SELECT 1 UNION ALL SELECT 1) AS D(c)), -- 2^1
-		L1   AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),       -- 2^2
-		L2   AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),       -- 2^4
-		L3   AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),       -- 2^8
-		L4   AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),       -- 2^16
-		L5   AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),       -- 2^32
-		Nums AS (SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS k FROM L5)
+        L0   AS (SELECT c FROM (SELECT 1 UNION ALL SELECT 1) AS D(c)), -- 2^1
+        L1   AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),       -- 2^2
+        L2   AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),       -- 2^4
+        L3   AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),       -- 2^8
+        L4   AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),       -- 2^16
+        L5   AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),       -- 2^32
+        Nums AS (SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS k FROM L5)
 
-		-- Thêm dữ liệu cho bảng THUOC với MATHUOC từ 1 đến 1000000
-		INSERT INTO THUOC (MATHUOC, TENTHUOC, GHICHU)
-		SELECT 
-			k AS MATHUOC,
-			N'Thuốc ' + CAST(k AS VARCHAR) AS TENTHUOC,
-			N'Ghi chú cho thuốc ' + CAST(k AS VARCHAR) AS GHICHU
-		FROM Nums
-		WHERE k <= 100000;
-
-	END
-    PRINT 'Sample data inserted successfully.'
+        -- Thêm dữ liệu cho bảng THUOC với TENTHUOC và GHICHU
+        INSERT INTO THUOC (TENTHUOC, GHICHU)
+        SELECT 
+            N'Thuốc ' + (CAST(k AS VARCHAR)) AS TENTHUOC,
+            N'Ghi chú cho thuốc ' + (CAST(k AS VARCHAR)) AS GHICHU
+        FROM Nums
+        WHERE k <= 100000;
+END
 GO
 
 create PROCEDURE InsertSampleData_ChongChiDinh
@@ -348,11 +394,11 @@ BEGIN
 			k AS MATHANHTOAN,
 			k AS NHASI,
 			k AS MABENHNHAN,
-			'01/01/2022' AS NGAYTHANHTOAN,
-			'01/01/2021' AS NGAYGIAODICH,
-			null AS TONGTIENTHANHTOAN,
-			k * 500 AS TIENDATRA,
-			null AS TIENTHOI,
+			DATEADD(DAY, -FLOOR(RAND() * 36525), GETDATE()) AS NGAYTHANHTOAN,
+			DATEADD(DAY, -FLOOR(RAND() * 36525), GETDATE()) AS NGAYGIAODICH,
+			k * 150 AS TONGTIENTHANHTOAN,
+			k * 100 AS TIENDATRA,
+			k * 50 AS TIENTHOI,
 			CASE WHEN k % 2 = 0 THEN N'TIỀN MẶT' ELSE N'THANH TOÁN ONLINE' END AS LOAITHANHTOAN
 		FROM Nums
 		WHERE k <= 100000
@@ -408,9 +454,9 @@ BEGIN
 		SELECT 
 			CAST(k AS VARCHAR) AS MALICH,
 			k AS MANHASI,
-			'12/10/2024' AS NGAY,
-			'08:30' AS GIOBATDAU,
-			'17:30' AS GIOKETTHUC
+			DATEADD(DAY, k, GETDATE() + 1) AS NGAY,
+			DATEADD(HOUR, k, '08:00:00') AS GIOBATDAU,
+            DATEADD(HOUR, k + 2, '17:00:00') AS GIOKETTHUC
 		FROM Nums
 		WHERE k <= 100000;
 
@@ -437,17 +483,45 @@ BEGIN
 		INSERT INTO LICHHEN (MALICHHEN, THOIGIAN, GIOKETTHUC, NHASI, MABENHNHAN, GHICHU, TINHTRANG, THOIGIANYEUCAU, PHONG, NGAYHENYEUCAU)
 		SELECT 
 			k AS MALICHHEN,
-			'09:30' AS THOIGIAN,
-			'16:30' AS GIOKETTHUC,
+			DATEADD(HOUR, k, '08:00:00') AS THOIGIAN,
+            DATEADD(HOUR, k + 2, '17:00:00') AS GIOKETTHUC,
 			k AS NHASI,
 			k AS MABENHNHAN,
 			N'Ghi chú ' + CAST(k AS NVARCHAR(10)) AS GHICHU,
 			N'Tình trạng ' + CAST(k AS NVARCHAR(10)) AS TINHTRANG,
-			'12/10/2023' AS THOIGIANYEUCAU,
+			DATEADD(DAY, k, GETDATE() + 1) AS THOIGIANYEUCAU,
 			k AS PHONG,
-			'12/10/2024' NGAYHENYEUCAU
+			DATEADD(DAY, k, GETDATE() + 1) AS NGAYHENYEUCAU
 		FROM Nums
 		WHERE k <= 100000;
+
+		PRINT 'Sample data inserted successfully.'
+END
+GO
+
+CREATE PROCEDURE InsertSampleData_LichTaiKham
+AS
+BEGIN
+	
+	WITH
+		L0   AS (SELECT c FROM (SELECT 1 UNION ALL SELECT 1) AS D(c)), -- 2^1
+		L1   AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),       -- 2^2
+		L2   AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),       -- 2^4
+		L3   AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),       -- 2^8
+		L4   AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),       -- 2^16
+		L5   AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),       -- 2^32
+		Nums AS (SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS k FROM L5)
+
+		-- Insert sample data into LICHHEN table with required columns
+		-- Thêm dữ liệu cho bảng LICHTAIKHAM với MATAIKHAM, NGAYCHIDINH, và GHICHU
+        INSERT INTO LICHTAIKHAM (MATAIKHAM, NGAYCHIDINH, GHICHU)
+        SELECT 
+            k AS MATAIKHAM,
+            DATEADD(DAY, k, GETDATE() + 1) AS NGAYCHIDINH,  -- Thêm 1 ngày để đảm bảo ngày lớn hơn hiện tại
+            N'Ghi chú ' + CAST(k AS VARCHAR) AS GHICHU
+        FROM Nums
+        WHERE k <= 100000;
+
 
 		PRINT 'Sample data inserted successfully.'
 END
@@ -472,9 +546,9 @@ GO
 exec InsertSampleData_ChiTietBenhNhan
 GO
 
-SET IDENTITY_INSERT THUOC ON
+--SET IDENTITY_INSERT THUOC ON
 exec InsertSampleData_Thuoc
-SET IDENTITY_INSERT THUOC OFF
+-- SET IDENTITY_INSERT THUOC OFF
 GO
 
 exec InsertSampleData_ChongChiDinh
@@ -518,11 +592,13 @@ exec InsertSampleData_LichLamViec
 GO
 
 SET IDENTITY_INSERT LICHHEN ON
-ALTER TABLE LICHHEN DISABLE TRIGGER TRIGGER_LICHHEN 
+--ALTER TABLE LICHHEN DISABLE TRIGGER TRIGGER_LICHHEN 
 exec InsertSampleData_LichHen
-ALTER TABLE LICHHEN ENABLE TRIGGER TRIGGER_LICHHEN 
+--ALTER TABLE LICHHEN ENABLE TRIGGER TRIGGER_LICHHEN 
 SET IDENTITY_INSERT LICHHEN OFF
 GO
+
+exec InsertSampleData_LichTaiKham
 
 SELECT * FROM NGUOIDUNG
 select * from NHASI
@@ -540,4 +616,4 @@ select * from lichlamviec
 select * from LICHHEN
 
 
-delete from LICHHEN
+-- delete from LICHHEN
