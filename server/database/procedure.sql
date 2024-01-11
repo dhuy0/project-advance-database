@@ -3,6 +3,7 @@ USE [QLNhaKhoa]
 DROP PROC IF EXISTS Proc_DangNhap
 DROP PROC IF EXISTS Proc_DanhSachBenhNhan
 DROP PROC IF EXISTS Proc_ThemBenhNhan
+DROP PROC IF EXISTS Proc_ThemNhaSi 
 DROP PROC IF EXISTS Proc_CapNhatBenhNhan
 DROP PROC IF EXISTS Proc_ThemThongTinChiDinh
 DROP PROC IF EXISTS Proc_XoaThongTinChiDinh 
@@ -100,6 +101,49 @@ BEGIN
 END
 GO
 
+ALTER PROC Proc_ThemNhaSi 
+    @TenDangNhap CHAR(30),
+    @MatKhau CHAR(30),
+    @TenNguoiDung NVARCHAR(50),
+    @NgaySinh DATE ,
+    @DiaChi NVARCHAR(100),
+    @SoDienThoai CHAR(10),
+    @Roles NVARCHAR(20),
+    @ChuyenMon NVARCHAR(50),
+    @KinhNghiem NVARCHAR(50)
+AS 
+BEGIN
+    DECLARE @MaNguoiDung INT = (SELECT COUNT(*) FROM dbo.NGUOIDUNG);
+	SET @MaNguoiDung = @MaNguoiDung + 1;
+    -- Add Người Dùng
+    SET IDENTITY_INSERT NGUOIDUNG ON;
+
+    INSERT INTO dbo.NGUOIDUNG (MANGUOIDUNG, TENDANGNHAP, MATKHAU, TENNGUOIDUNG, NGAYSINH, DIACHI, SODIENTHOAI, ROLES)
+    VALUES (@MaNguoiDung, @TenDangNhap, @MatKhau, @TenNguoiDung, @NgaySinh, @DiaChi, @SoDienThoai, @Roles);
+
+
+    SET IDENTITY_INSERT NGUOIDUNG OFF;
+
+    -- Add Nha Sĩ
+	SET IDENTITY_INSERT NHASI ON;
+    INSERT INTO dbo.NHASI (MABACSI, CHUYENMON, KINHNGHIEM)
+    VALUES (@MaNguoiDung, @ChuyenMon, @KinhNghiem);
+	SET IDENTITY_INSERT NHASI OFF;
+END
+
+-- EXEC Proc_ThemNhaSi
+--     @TenDangNhap = 'NhaSi123',
+--     @MatKhau = 'Password123',
+--     @TenNguoiDung = 'Nha Sĩ 123',
+--     @NgaySinh = '1980-01-01',
+--     @DiaChi = '123 Nha Khoa Street',
+--     @SoDienThoai = '9876543210',
+--     @Roles = N'NHA SĨ',
+--     @ChuyenMon = N'Răng Hàm Nhỏ',
+--     @KinhNghiem = N'10 năm kinh nghiệm';
+
+-- select * from nhasi
+
 -- EXEC Proc_ThemBenhNhan
 --     @HoTen = N'John Doe',
 --     @SoDienThoai = '1234567890',
@@ -108,7 +152,7 @@ GO
 --     @NgaySinh = '1990-01-01',
 --     @NhaSi = 1;
 
-select * from BENHNHAN
+-- select * from BENHNHAN
 
 
 

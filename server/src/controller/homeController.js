@@ -306,23 +306,32 @@ const handleAddDentist = async (req, res) => {
   try {
     const data = req.body;
     var pool = await conn;
-    var sqlString = `INSERT INTO NHASI(THOIGIAN, NHASI, MABENHNHAN, GHICHU, TINHTRANG, THOIGIANYEUCAU, PHONG, NGAYHENYEUCAU)
-    VALUES(@varTime, @varDentist, @varPatient, @varNote, @varStatus, @varTimeRequest, @varRoom, @varDateRequest)`;
+    var sqlString = `EXEC Proc_ThemNhaSi
+                      @TenDangNhap = @varUserLoginName,
+                      @MatKhau = @varPassword,
+                      @TenNguoiDung = @varUserName,
+                      @NgaySinh = @varBirthday,
+                      @DiaChi = @varAddress,
+                      @SoDienThoai = @varPhone,
+                      @Roles = @varRole,
+                      @ChuyenMon = @varSpecialized,
+                      @KinhNghiem = @varExperience`;
     const result = await pool
     .request()
-    .input("varTime", sql.Time, data.THOIGIAN)
-    .input("varDentist", sql.Char(6), data.NHASI)
-    .input("varPatient", sql.Char(6), data.MABENHNHAN)
-    .input("varNote", sql.NVarChar(50), data.GHICHU)
-    .input("varStatus", sql.NVarChar(50), data.TINHTRANG)
-    .input("varTimeRequest", sql.Time, data.THOIGIANYEUCAU)
-    .input("varRoom", sql.Char(6), data.PHONG)
-    .input("varDateRequest", sql.Date, data.NGAYHENYEUCAU)
-    .input("varId", sql.Char(6), data.MALICHHEN)
+    .input("varUserLoginName", sql.NVarChar(30), data.userLoginName) //này là tên đăng nhập
+    .input("varPassword", sql.NVarChar(30), data.password)
+    .input("varUserName", sql.NVarChar(30), data.Username) //này là tên người dùng
+    .input("varBirthday", sql.Date, data.birthday)
+    .input("varAddress", sql.NVarChar(50), data.address)
+    .input("varPhone", sql.Char(10), data.phoneNumber)
+    .input("varRole", sql.NVarChar(30), data.userRole)
+    .input("varSpecialized", sql.NVarChar(50), data.specialized) // chuyên môn
+    .input("varExperience", sql.NVarChar(50), data.experience) // kinh nghiệm
     .query(sqlString);
     console.log(result);
     if (result.rowsAffected[0] > 0) {
-      res.status(200).json(result.recordset[0]);
+      console.log("add data successful")
+      res.status(200).json(result.recordset);
     } else {
       res.status(404).json({ message: "Không có dữ liệu" });
     }
@@ -544,5 +553,6 @@ module.exports = {
   handleAddMedicine,
   handleDeleteMedicine,
   handleUpdateMedicine,
-  handleAddPatient
+  handleAddPatient,
+  handleAddDentist
 };

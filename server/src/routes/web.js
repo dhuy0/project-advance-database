@@ -13,6 +13,7 @@ const initWebRoutes = (app) => {
   router.get("/get-patient-list", homeController.handleGetAllPatient)
   // POST METHOD--------------
   router.post("/add-patient", homeController.handleAddPatient)
+  router.post("/add-dentist", homeController.handleAddDentist)
   return app.use("/", router);
 };
 
