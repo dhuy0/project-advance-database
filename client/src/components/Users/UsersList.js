@@ -74,7 +74,7 @@ const UsersList = () => {
                   <img src={user.avatar} alt={`Avatar of ${user.first_name}`} />
                 </td>
                 <td>
-                <Link to={`/user/${user.id}`}>Details</Link>
+                <Link to={`/dashboard/patients/${user.id}`}>Details</Link>
                 </td>
               </tr>
               {selectedUser && selectedUser.id === user.id && (

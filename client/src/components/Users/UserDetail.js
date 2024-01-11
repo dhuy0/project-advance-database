@@ -1,67 +1,45 @@
-// UserDetail.js
+// UserDetails.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 
-const UserDetail = ({ user }) => {
-  const [editableFields, setEditableFields] = useState({
-    name: user.name || '',
-    age: user.age || '',
-    gender: user.gender || '',
-    totalFees: user.totalFees || '',
-    totalPaid: user.totalPaid || '',
-    dentalHealthInfo: user.dentalHealthInfo || '',
-    allergyNote: user.allergyNote || '',
-    againstDrugNote: user.againstDrugNote || '',
-    plantTreatment: user.plantTreatment || '',
-    paymentInfo: user.paymentInfo || '',
-  });
+const UserDetails = () => {
+  const { patientId } = useParams();
+  console.log(patientId)
+  const [userDetails, setUserDetails] = useState(null);
 
-  const handleFieldChange = (fieldName, value) => {
-    setEditableFields((prevFields) => ({
-      ...prevFields,
-      [fieldName]: value,
-    }));
-  };
+  useEffect(() => {
+    // Fetch user details based on the ID
+    const fetchUserDetails = async () => {
+      try {
+        const response = await fetch(`https://reqres.in/api/users/${patientId}`);
+        const data = await response.json();
+        setUserDetails(data.data); // Assuming the user details are present in the 'data' property
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+      }
+    };
 
-  const handleSaveChanges = () => {
-    // Implement your logic to save changes, for example, call an API
-    console.log('Saving changes:', editableFields);
-    // You may want to update the user object in the parent component or make an API call to save the changes.
-  };
+    fetchUserDetails();
+  }, [patientId]); // Re-run effect when the 'id' parameter changes
 
   return (
-    <div className="user-detail">
+    <div className="hospital-theme">
       <h2>User Details</h2>
-      <div>
-        <label>Name:</label>
-        <input
-          type="text"
-          value={editableFields.name}
-          onChange={(e) => handleFieldChange('name', e.target.value)}
-        />
-      </div>
-      <div>
-        <label>Age:</label>
-        <input
-          type="text"
-          value={editableFields.age}
-          onChange={(e) => handleFieldChange('age', e.target.value)}
-        />
-      </div>
-      <div>
-        <label>Gender:</label>
-        <input
-          type="text"
-          value={editableFields.gender}
-          onChange={(e) => handleFieldChange('gender', e.target.value)}
-        />
-      </div>
-      {/* Add similar sections for other fields */}
-      <div>
-        <button onClick={handleSaveChanges}>Save Changes</button>
-      </div>
+      {userDetails ? (
+        <div>
+          <p>ID: {userDetails.id}</p>
+          <p>Email: {userDetails.email}</p>
+          <p>First Name: {userDetails.first_name}</p>
+          <p>Last Name: {userDetails.last_name}</p>
+          <img src={userDetails.avatar} alt={`Avatar of ${userDetails.first_name}`} />
+          {/* Display other user details here based on your data structure */}
+        </div>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
 };
 
-export default UserDetail;
+export default UserDetails;
