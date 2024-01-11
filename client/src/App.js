@@ -1,36 +1,17 @@
 import React from "react";
-import { NavLink, Route, Routes} from 'react-router-dom'
-import "./index.css";
+import {  Route, Routes} from 'react-router-dom'
+
 
 
 // Components
-import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import Insurance from "./components/Insurance";
-import Services from "./components/Services";
-import Team from "./components/Team";
-import Testimonials from "./components/Testimonials";
-import FAQs from "./components/FAQs";
-import Contact from "./components/Contact";
-import Footer from "./components/Footer";
-import Features from "./components/Features";
-
+import LandingPage from  './pages/LadingPage';
+import DashBoard from './pages/DashBoard';
 
 export default function App() {
   return (
-
-    
-    <div>
-      <Navbar />
-      <Hero />
-      <Services />
-      <Insurance />
-      <Features  /> 
-      <Team />
-      <Testimonials />
-      <FAQs />
-      <Contact />
-      < Footer />
-    </div>
+    <Routes>
+      <Route path="/" element = {<LandingPage/>}/>
+      <Route path = "/dashboard" element = {<DashBoard/>}/>
+    </Routes>
   );
 }
