@@ -355,7 +355,7 @@ const handleAddPatient = async (req, res) => {
     console.log(result);
     if (result.rowsAffected[0] > 0) {
       console.log("Add data successful")
-      res.status(200).json(result.recordset[0]);
+      res.status(200).json(result.recordset);
     } else {
       res.status(404).json({ message: "Không có dữ liệu" });
     }
