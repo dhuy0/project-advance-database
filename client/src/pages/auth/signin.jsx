@@ -2,7 +2,7 @@ import React, { useReducer, useEffect, useState, useContext } from "react";
 import Input from '../../components/shared/FormElements/input'
 import {VALIDATOR_EMAIL, VALIDATOR_REQUIRE, VALIDATOR_MINLENGTH, VALIDATOR_COMPARE_STR} from "../../utils/validators"
 import {useForm} from '../../shared/hooks/form-hook'
-import { Link, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from '../../components/shared/FormElements/button'
 
 
@@ -14,7 +14,8 @@ import { AuthContext } from "../../shared/context/auth-context";
 
 
 export default function SignIn (props) {
-    const auth = useContext(AuthContext)
+    const auth = useContext(AuthContext);
+    const navigate = useNavigate()
     const [isLoginMode , setIsLoginMode] = useState(true);
     const [formState, inputHandler, setFormData] = useForm( 
     {
@@ -65,12 +66,13 @@ export default function SignIn (props) {
         event.preventDefault();
         console.log(formState.inputs)
         auth.login('001');
+        navigate('/dashboard')
         
     }
 
     return (
         <>
-        { auth.isLoggedIn && (<Navigate to ='/home' replace = {true}/> )}
+        {/* { auth.isLoggedIn && (<Navigate to ='/home' replace = {true}/> )} */}
         <div className="container-fluid d-flex flex-column" id = "form-container">
         
         <form className='signin-form'>
