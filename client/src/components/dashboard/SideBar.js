@@ -8,14 +8,14 @@ function SideBar() {
 
   return (
     <section className="sidebar" >
-      <NavLink path = '/dashbard' className="logo">
+      <NavLink to = '/dashboard' className="logo">
         <i className="fab fa-slack"></i>
         <span className="text">Admin Panel</span>
       </NavLink>
 
       <ul className="side-menu top">
         <li className="active">
-          <NavLink className="nav-link">
+          <NavLink to = "/dashboard" className="nav-link">
             <i className="fas fa-border-all"></i>
             <span className="text">Dashboard</span>
           </NavLink>
