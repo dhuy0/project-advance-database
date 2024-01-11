@@ -1,0 +1,40 @@
+#form-container {
+    height: 100vh;
+    width: 100%;
+    background: linear-gradient(rgba(24, 29, 56, .7), rgba(24, 29, 56, .7)), url(https://th.bing.com/th/id/R.e35ee12fbd7ad0533f485e1d03274dd5?rik=LCpFbdcAeWDZ8w&riu=http%3a%2f%2fwallpapercave.com%2fwp%2ffAwVCh3.jpg&ehk=lGN4CaEuFMjMiZTZ2nF9id7MRRJ3e1tiWELDbLGorPE%3d&risl=&pid=ImgRaw&r=0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size : cover;
+}
+
+.signin-form {
+    position: relative;
+    list-style: none;
+    margin: 0 auto;
+    padding: 1rem;
+    width: 90%;
+    max-width: 40rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+    border-radius: 6px;
+    background: white;
+
+}
+
+
+.signin-form .form-heading {
+    text-align: center;
+}
+
+.signin-form .form-heading h3 {
+    font-size: 2rem;
+}
+.signin-form .form-heading p {
+    color: #636d77;
+    font-size: 1.6rem;
+    font-weight: lighter;
+    line-height: 2.4rem;
+    margin-top: 16px;
+    font-weight: 300;
+}
+

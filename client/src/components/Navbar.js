@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, animateScroll as scroll } from "react-scroll";
-
+import {NavLink} from 'react-router-dom'
 const Navbar = () => {
   const [showNavbar, setShowNavbar] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -43,7 +43,7 @@ const Navbar = () => {
       id: 5,
       link: "contact",
       label: "Book Now",
-    },
+    }
   ];
 
   const scrollToTop = () => {
@@ -105,6 +105,8 @@ const Navbar = () => {
               </Link>
             </li>
           ))}
+          <NavLink to = "/signin" className={`cursor-pointer font-semibold hover:text-blue-400 ${showNavbar ? "text-blue-600" : "text-blue-900"}`}>Sign In
+          </NavLink>
         </ul>
       </nav>
 

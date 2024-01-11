@@ -1,18 +1,13 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { NavLink } from 'react-router-dom'
 
 import './SideBar.css'
 
 function SideBar() {
-    const [display, setDisplay ] = useState(true);
 
-    const showHandler = (e) => {
-        e.target.classList.toggle('hide')
-    }
-    
 
   return (
-    <section className="sidebar" showHandler = {showHandler}>
+    <section className="sidebar" >
       <NavLink path = '/dashbard' className="logo">
         <i className="fab fa-slack"></i>
         <span className="text">Admin Panel</span>

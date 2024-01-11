@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 
 import SideBar from '../components/dashboard/SideBar';
@@ -6,12 +6,6 @@ import NavBar from '../components/dashboard/NavBar';
 import HeadTitle from '../components/dashboard/HeadTitle';
 import './DashBoard.css'
 function DashBoard() {
-  const [showSideBar, setShowSideBar] = useState(true);
-
-  const toggleSideBarHandler = (e) => {
-    e.target.classList.toggle('hide')
-    setShowSideBar(false)
-  }
 
   return (
     <>
