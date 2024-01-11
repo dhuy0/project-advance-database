@@ -164,7 +164,26 @@ const handleGetAllDentist = async (req, res) => {
     console.log(result);
 
     if (result.rowsAffected[0] > 0) {
-      res.status(200).json(result.recordset[0]);
+      res.status(200).json(result.recordset);
+    } else {
+      res.status(404).json({ message: "Không có dữ liệu" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const handleGetAllPatient = async (req, res) => {
+  try {
+    var pool = await conn;
+    var sqlString = `SELECT top 10 * FROM BENHNHAN`;
+    const result = await pool.request().query(sqlString);
+
+    console.log(result);
+
+    if (result.rowsAffected[0] > 0) {
+      res.status(200).json(result.recordset);
     } else {
       res.status(404).json({ message: "Không có dữ liệu" });
     }
@@ -284,33 +303,66 @@ const handleUpdateSchedule = async (req, res) => {
 };
 // Xem thu co store proc de add NHASI ko?
 const handleAddDentist = async (req, res) => {
-  // try {
-  //   const data = req.body;
-  //   var pool = await conn;
-  //   var sqlString = `INSERT INTO NHASI(THOIGIAN, NHASI, MABENHNHAN, GHICHU, TINHTRANG, THOIGIANYEUCAU, PHONG, NGAYHENYEUCAU)
-  //   VALUES(@varTime, @varDentist, @varPatient, @varNote, @varStatus, @varTimeRequest, @varRoom, @varDateRequest)`;
-  //   const result = await pool
-  //   .request()
-  //   .input("varTime", sql.Time, data.THOIGIAN)
-  //   .input("varDentist", sql.Char(6), data.NHASI)
-  //   .input("varPatient", sql.Char(6), data.MABENHNHAN)
-  //   .input("varNote", sql.NVarChar(50), data.GHICHU)
-  //   .input("varStatus", sql.NVarChar(50), data.TINHTRANG)
-  //   .input("varTimeRequest", sql.Time, data.THOIGIANYEUCAU)
-  //   .input("varRoom", sql.Char(6), data.PHONG)
-  //   .input("varDateRequest", sql.Date, data.NGAYHENYEUCAU)
-  //   .input("varId", sql.Char(6), data.MALICHHEN)
-  //   .query(sqlString);
-  //   console.log(result);
-  //   if (result.rowsAffected[0] > 0) {
-  //     res.status(200).json(result.recordset[0]);
-  //   } else {
-  //     res.status(404).json({ message: "Không có dữ liệu" });
-  //   }
-  // } catch (error) {
-  //   console.log(error);
-  //   res.status(500).json({ message: error.message });
-  // }
+  try {
+    const data = req.body;
+    var pool = await conn;
+    var sqlString = `INSERT INTO NHASI(THOIGIAN, NHASI, MABENHNHAN, GHICHU, TINHTRANG, THOIGIANYEUCAU, PHONG, NGAYHENYEUCAU)
+    VALUES(@varTime, @varDentist, @varPatient, @varNote, @varStatus, @varTimeRequest, @varRoom, @varDateRequest)`;
+    const result = await pool
+    .request()
+    .input("varTime", sql.Time, data.THOIGIAN)
+    .input("varDentist", sql.Char(6), data.NHASI)
+    .input("varPatient", sql.Char(6), data.MABENHNHAN)
+    .input("varNote", sql.NVarChar(50), data.GHICHU)
+    .input("varStatus", sql.NVarChar(50), data.TINHTRANG)
+    .input("varTimeRequest", sql.Time, data.THOIGIANYEUCAU)
+    .input("varRoom", sql.Char(6), data.PHONG)
+    .input("varDateRequest", sql.Date, data.NGAYHENYEUCAU)
+    .input("varId", sql.Char(6), data.MALICHHEN)
+    .query(sqlString);
+    console.log(result);
+    if (result.rowsAffected[0] > 0) {
+      res.status(200).json(result.recordset[0]);
+    } else {
+      res.status(404).json({ message: "Không có dữ liệu" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const handleAddPatient = async (req, res) => {
+  try {
+    const data = req.body;
+    var pool = await conn;
+    var sqlString = `EXEC Proc_ThemBenhNhan
+                    @HoTen = @varName,
+                    @SoDienThoai = @varPhone,
+                    @DiaChi = @varAddress,
+                    @Email = @varEmail,
+                    @NgaySinh = @varBirthday,
+                    @NhaSi = @varDentist`;
+    const result = await pool
+    .request()
+    .input("varName", sql.NVarChar(50), data.name)
+    .input("varPhone", sql.Char(10), data.phoneNumber)
+    .input("varAddress", sql.NVarChar(100), data.address)
+    .input("varEmail", sql.NVarChar(50), data.email)
+    .input("varBirthday", sql.Date, data.birthday)
+    .input("varDentist", sql.Int, data.defaultDentist)
+    .query(sqlString);
+    console.log(result);
+    if (result.rowsAffected[0] > 0) {
+      console.log("Add data successful")
+      res.status(200).json(result.recordset[0]);
+    } else {
+      res.status(404).json({ message: "Không có dữ liệu" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
 };
 // Xem thu co store proc de Update NHASI ko?
 const handleUpdateDentist = async (req, res) => {
@@ -488,8 +540,9 @@ module.exports = {
   handleAddSchedule,
   handleDeleteSchedule,
   handleUpdateSchedule,
-
+  handleGetAllPatient,
   handleAddMedicine,
   handleDeleteMedicine,
   handleUpdateMedicine,
+  handleAddPatient
 };

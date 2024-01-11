@@ -9,7 +9,10 @@ const router = express.Router();
 
 const initWebRoutes = (app) => {
   // GET METHOD--------------
-
+  router.get("/get-dentist-list", homeController.handleGetAllDentist)
+  router.get("/get-patient-list", homeController.handleGetAllPatient)
+  // POST METHOD--------------
+  router.post("/add-patient", homeController.handleAddPatient)
   return app.use("/", router);
 };
 
