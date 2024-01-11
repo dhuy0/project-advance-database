@@ -453,6 +453,34 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE InsertSampleData_LichTaiKham
+AS
+BEGIN
+	
+	WITH
+		L0   AS (SELECT c FROM (SELECT 1 UNION ALL SELECT 1) AS D(c)), -- 2^1
+		L1   AS (SELECT 1 AS c FROM L0 AS A CROSS JOIN L0 AS B),       -- 2^2
+		L2   AS (SELECT 1 AS c FROM L1 AS A CROSS JOIN L1 AS B),       -- 2^4
+		L3   AS (SELECT 1 AS c FROM L2 AS A CROSS JOIN L2 AS B),       -- 2^8
+		L4   AS (SELECT 1 AS c FROM L3 AS A CROSS JOIN L3 AS B),       -- 2^16
+		L5   AS (SELECT 1 AS c FROM L4 AS A CROSS JOIN L4 AS B),       -- 2^32
+		Nums AS (SELECT ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS k FROM L5)
+
+		-- Insert sample data into LICHHEN table with required columns
+		-- Thêm dữ liệu cho bảng LICHTAIKHAM với MATAIKHAM, NGAYCHIDINH, và GHICHU
+        INSERT INTO LICHTAIKHAM (MATAIKHAM, NGAYCHIDINH, GHICHU)
+        SELECT 
+            k AS MATAIKHAM,
+            DATEADD(DAY, k, GETDATE() + 1) AS NGAYCHIDINH,  -- Thêm 1 ngày để đảm bảo ngày lớn hơn hiện tại
+            N'Ghi chú ' + CAST(k AS VARCHAR) AS GHICHU
+        FROM Nums
+        WHERE k <= 100000;
+
+
+		PRINT 'Sample data inserted successfully.'
+END
+GO
+
 
 SET IDENTITY_INSERT NGUOIDUNG ON
 exec InsertSampleData
@@ -524,20 +552,23 @@ ALTER TABLE LICHHEN ENABLE TRIGGER TRIGGER_LICHHEN
 SET IDENTITY_INSERT LICHHEN OFF
 GO
 
-SELECT * FROM NGUOIDUNG
-select * from NHASI
-SELECT * FROM BENHNHAN
-select * from CHITIETHOSOBENHNHAN
-SELECT * FROM THUOC
-select * from KEHOACHDIEUTRI
-select * from KEHOACH_DIEUTRI
-select * from DONTHUOC
-select * from CHITIETDONTHUOC
-select * from RANG
-select * from THONGTINTHANHTOAN
-select * from HOADONDIEUTRI
-select * from lichlamviec
-select * from LICHHEN
+exec InsertSampleData_LichTaiKham
+go
+
+-- SELECT * FROM NGUOIDUNG
+-- select * from NHASI
+-- SELECT * FROM BENHNHAN
+-- select * from CHITIETHOSOBENHNHAN
+-- SELECT * FROM THUOC
+-- select * from KEHOACHDIEUTRI
+-- select * from KEHOACH_DIEUTRI
+-- select * from DONTHUOC
+-- select * from CHITIETDONTHUOC
+-- select * from RANG
+-- select * from THONGTINTHANHTOAN
+-- select * from HOADONDIEUTRI
+-- select * from lichlamviec
+-- select * from LICHHEN
 
 
-delete from LICHHEN
+-- delete from LICHHEN
